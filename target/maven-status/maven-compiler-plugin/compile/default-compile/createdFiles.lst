@@ -1,10 +1,7 @@
-com/example/temporal/demo/workflow/MainGreetingWorkflowImpl.class
-com/example/temporal/demo/workflow/MainGreetingWorkflow.class
 com/example/temporal/demo/workflow/GreetingWorkflow.class
 com/example/temporal/demo/TemporalDemoApplication.class
 com/example/temporal/demo/activities/GreetingActivitiesImpl.class
 com/example/temporal/demo/activities/GreetingActivities.class
-com/example/temporal/demo/workflow/GreetingWorkflowImpl.class
 com/example/temporal/demo/web/GreetingController.class
 com/example/temporal/demo/common/Constants.class
 com/example/temporal/demo/config/TemporalConfig.class

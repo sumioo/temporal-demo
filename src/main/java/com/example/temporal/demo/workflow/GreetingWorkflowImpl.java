@@ -4,8 +4,8 @@ import com.example.temporal.demo.activities.GreetingActivities;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.Async;
 import io.temporal.workflow.Promise;
+import io.temporal.failure.ActivityFailure;
 import io.temporal.workflow.Workflow;
-import java.util.Iterator;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -16,6 +16,10 @@ public class GreetingWorkflowImpl implements GreetingWorkflow {
       GreetingActivities.class,
       ActivityOptions.newBuilder()
           .setStartToCloseTimeout(Duration.ofSeconds(22))
+          .setRetryOptions(
+              io.temporal.common.RetryOptions.newBuilder()
+                  .setMaximumAttempts(1)
+                  .build())
           .build());
 
   @Override
@@ -29,27 +33,45 @@ public class GreetingWorkflowImpl implements GreetingWorkflow {
     // 2. 任意一个完成就实时处理（按索引删除，保证剩余数量递减）
     StringBuilder sb = new StringBuilder();
     while (!promises.isEmpty()) {
-      // 先找到已完成的那个 Promise 的索引
+      // 使用 Workflow.await() 来安全地等待，直到至少有一个 Promise 完成
+      Workflow.await(() -> promises.stream().anyMatch(Promise::isCompleted));
+
+      // 现在，从列表中找到那个已经完成的 Promise 的索引
       int doneIndex = -1;
       for (int i = 0; i < promises.size(); i++) {
-        if (promises.get(i).isCompleted()) {   // 关键 API：isCompleted()
+        if (promises.get(i).isCompleted()) {
           doneIndex = i;
           break;
         }
       }
-      if (doneIndex == -1) {          // 理论上不会，保险
-        doneIndex = 0;
+
+      // 如果找到了（理论上总能找到）
+      if (doneIndex != -1) {
+        Promise<String> completedPromise = promises.get(doneIndex);
+        try {
+            // 异常会在调用 .get() 时被抛出
+            String result = completedPromise.get();
+            System.out.println("anyOf: " + result);
+            sb.append(result).append("; ");
+
+        } catch (ActivityFailure e) {
+            // Activity 在所有重试后最终失败了！
+            Workflow.getLogger(GreetingWorkflowImpl.class).error("Activity failed after all retries.", e);
+
+            // 在这里调用清理 Activity
+            activities.cleanupAfterFailure("Failed to process greeting. Cause: " + e.getCause().getMessage());
+
+            // 在最终结果中记录一个错误标记
+            return sb.append("FAILED_ACTIVITY_CLEANED_UP; ").toString();
+
+        } finally {
+            // 无论成功还是失败，都必须将 Promise 移除，以防止死循环
+            promises.remove(doneIndex);
+            System.out.println("remaining = " + promises.size());
+        }
       }
-      try {
-        String result = promises.get(doneIndex).get();
-        sb.append(result).append("; ");
-        System.out.println("anyOf: " + result);
-      } catch (Exception e) {
-        System.out.println("anyOf: " + e);
-      }
-      promises.remove(doneIndex);     // 按索引删，一定成功
-      System.out.println("remaining = " + promises.size());
     }
+
     return sb.toString();
   }
 }

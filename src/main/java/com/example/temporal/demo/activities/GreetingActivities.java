@@ -7,5 +7,8 @@ import io.temporal.activity.ActivityMethod;
 public interface GreetingActivities {
   @ActivityMethod
   String composeGreeting(String greeting, String name);
+
+  @ActivityMethod
+  void cleanupAfterFailure(String details);
 }
 
