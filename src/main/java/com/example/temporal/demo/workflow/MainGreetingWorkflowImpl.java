@@ -1,7 +1,6 @@
 package com.example.temporal.demo.workflow;
 
 import com.example.temporal.demo.common.Constants;
-import com.example.temporal.demo.workflow.GreetingWorkflow;
 
 import io.temporal.workflow.Async;
 import io.temporal.workflow.ChildWorkflowOptions;

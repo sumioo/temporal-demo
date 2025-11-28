@@ -17,8 +17,28 @@
 
   <properties>
     <java.version>17</java.version>
-    <temporal.sdk.version>1.22.3</temporal.sdk.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Enforce Spring Boot's recommended versions for common dependencies -->
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>33.2.0-jre</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>3.25.3</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.errorprone</groupId>
+        <artifactId>error_prone_annotations</artifactId>
+        <version>2.18.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -27,14 +47,14 @@
     </dependency>
 
     <dependency>
-      <groupId>io.temporal</groupId>
-      <artifactId>temporal-sdk</artifactId>
-      <version>${temporal.sdk.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
@@ -45,9 +65,8 @@
 
     <dependency>
       <groupId>io.temporal</groupId>
-      <artifactId>temporal-testing</artifactId>
-      <version>${temporal.sdk.version}</version>
-      <scope>test</scope>
+      <artifactId>temporal-spring-boot-starter</artifactId>
+      <version>1.32.0</version>
     </dependency>
   </dependencies>
 

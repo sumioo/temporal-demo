@@ -5,8 +5,6 @@ import com.example.temporal.demo.common.Constants;
 import com.example.temporal.demo.workflow.GreetingWorkflowImpl;
 import com.example.temporal.demo.workflow.MainGreetingWorkflowImpl;
 import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowClientOptions;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerOptions;
 import io.temporal.worker.WorkerFactory;
@@ -17,22 +15,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class TemporalConfig {
-
-  @Bean
-  public WorkflowServiceStubs workflowServiceStubs() {
-    return WorkflowServiceStubs.newInstance();
-  }
-
-  @Bean
-  public WorkflowClientOptions workflowClientOptions() {
-    return WorkflowClientOptions.newBuilder().setNamespace(Constants.NAMESPACE).build();
-  }
-
-  @Bean
-  public WorkflowClient workflowClient(
-      WorkflowServiceStubs workflowServiceStubs, WorkflowClientOptions options) {
-    return WorkflowClient.newInstance(workflowServiceStubs, options);
-  }
 
   @Bean
   public WorkerFactory workerFactory(WorkflowClient client) {
@@ -60,4 +42,3 @@ public class TemporalConfig {
     return args -> factory.start();
   }
 }
-
