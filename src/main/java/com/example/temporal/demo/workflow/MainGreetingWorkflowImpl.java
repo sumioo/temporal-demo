@@ -13,11 +13,11 @@ import java.util.List;
 public class MainGreetingWorkflowImpl implements MainGreetingWorkflow {
 
     @Override
-    public String orchestrate(String name) {
+    public String orchestrate(String name, int childCount) {
         List<Promise<String>> childPromises = new ArrayList<>(5);
 
         // 1. 一次性启动 5 个子工作流（完全并发）
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < childCount; i++) {
             GreetingWorkflow child = Workflow.newChildWorkflowStub(
                     GreetingWorkflow.class,
                     ChildWorkflowOptions.newBuilder()

@@ -4,9 +4,8 @@ server:
 spring:
   application:
     name: temporal-demo
-
-temporal:
-  connection:
-    target: 127.0.0.1:7233
-  namespace: default
+  temporal:
+    connection:
+      target: 127.0.0.1:7233
+    namespace: default
 

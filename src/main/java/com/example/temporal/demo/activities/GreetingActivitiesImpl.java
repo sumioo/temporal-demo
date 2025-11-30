@@ -2,6 +2,11 @@ package com.example.temporal.demo.activities;
 
 import org.springframework.stereotype.Component;
 
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+
 @Component
 public class GreetingActivitiesImpl implements GreetingActivities {
   @Override
@@ -16,6 +21,34 @@ public class GreetingActivitiesImpl implements GreetingActivities {
       System.out.println(e);
     }
     return String.format("%s %s! (sleep %d seconds)", greeting, name, sleepSeconds);
+  }
+
+  @Override
+  public String longGreeting(int n) {
+    try {
+      Thread.sleep(1000 * n);
+    } catch (InterruptedException e) {
+      System.out.println(e);
+    }
+    return "longGreeting done";
+  }
+
+  @Override
+  public String fetchURL(String url)  {
+    try {
+      HttpClient client = HttpClient.newHttpClient();
+      HttpRequest request = HttpRequest.newBuilder()
+              .uri(URI.create(url))
+              .build();
+      HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+      String body = response.body();
+      String truncatedBody = body.substring(0, Math.min(body.length(), 100));
+      System.out.println("Response body (first 100 bytes): " + truncatedBody);
+      return "Response status code: " + response.statusCode() + ", body: " + truncatedBody;
+    } catch (Exception e) {
+      System.err.println("Failed to fetch URL: " + e.getMessage());
+      throw new IllegalStateException("Failed to fetch URL", e);
+    }
   }
 
   @Override

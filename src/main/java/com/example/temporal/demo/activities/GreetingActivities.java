@@ -8,7 +8,14 @@ public interface GreetingActivities {
   @ActivityMethod
   String composeGreeting(String greeting, String name);
 
+
+  @ActivityMethod
+  String longGreeting(int n);
+
   @ActivityMethod
   void cleanupAfterFailure(String details);
+
+  @ActivityMethod
+  String fetchURL(String url);
 }
 

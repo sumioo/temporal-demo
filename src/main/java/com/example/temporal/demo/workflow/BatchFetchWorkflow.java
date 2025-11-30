@@ -3,8 +3,10 @@ package com.example.temporal.demo.workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 
+import java.util.List;
+
 @WorkflowInterface
-public interface MainGreetingWorkflow {
+public interface BatchFetchWorkflow {
     @WorkflowMethod
-    String orchestrate(String name, int childCount);
+    String orchestrate(List<List<String>> urlBatches);
 }

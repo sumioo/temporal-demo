@@ -24,6 +24,11 @@ public class GreetingWorkflowImpl implements GreetingWorkflow {
 
   @Override
   public String getGreeting(String name) {
+
+    // 0. 先调用 longGreeting 活动
+    String longGreeting = activities.longGreeting(20);
+    System.out.println(longGreeting);
+
     // 1. 异步启动 10 个活动
     List<Promise<String>> promises = new ArrayList<>(10);
     for (int i = 0; i < 10; i++) {
