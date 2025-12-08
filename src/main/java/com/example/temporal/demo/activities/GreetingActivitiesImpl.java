@@ -11,14 +11,17 @@ import java.net.URI;
 public class GreetingActivitiesImpl implements GreetingActivities {
   @Override
   public String composeGreeting(String greeting, String name) {
-    int sleepSeconds = 1 + (int) (Math.random() * 20);
+    int sleepSeconds = 1 + (int) (Math.random() * 10);
     try {
       Thread.sleep(1000 * sleepSeconds);
-      if (sleepSeconds > 10) {
-        throw new RuntimeException("sleep seconds > 10");
+      if (sleepSeconds > 5) {
+        throw new RuntimeException("sleep seconds > 5");
       }
     } catch (InterruptedException e) {
       System.out.println(e);
+    }
+    if (sleepSeconds > 5) {
+      return null;
     }
     return String.format("%s %s! (sleep %d seconds)", greeting, name, sleepSeconds);
   }
@@ -58,5 +61,26 @@ public class GreetingActivitiesImpl implements GreetingActivities {
     System.err.println("--- CLEANUP ACTIVITY TRIGGERED ---");
     System.err.println("Failure Details: " + details);
     System.err.println("--- CLEANUP ACTIVITY COMPLETED ---");
+  }
+
+  @Override
+  public String randomError() {
+    int n = (int) (Math.random() * 10);
+    if(n == 2) {
+      throw new NullPointerException("random error null");
+    }
+    if (n == 3) {
+      throw new IllegalArgumentException("random error illegal");
+    }
+    if (n == 4 || n == 5) {
+      throw new RuntimeException("random error runtime");
+    }
+    return "no error";
+  }
+
+  @Override
+  public int randomInt() {
+    int n = (int) (Math.random() * 10);
+    return n;
   }
 }

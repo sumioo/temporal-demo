@@ -3,6 +3,8 @@ package com.example.temporal.demo.config;
 import com.example.temporal.demo.activities.GreetingActivitiesImpl;
 import com.example.temporal.demo.common.Constants;
 import com.example.temporal.demo.workflow.BatchFetchWorkflowImpl;
+import com.example.temporal.demo.workflow.DeadlockReproduceWorkflow;
+import com.example.temporal.demo.workflow.DeadlockReproduceWorkflowImpl;
 import com.example.temporal.demo.workflow.FetchWorkflowImpl;
 import com.example.temporal.demo.workflow.GreetingWorkflowImpl;
 import com.example.temporal.demo.workflow.MainGreetingWorkflowImpl;
@@ -35,7 +37,7 @@ public class TemporalConfig {
 
     Worker worker = factory.newWorker(Constants.TASK_QUEUE, options);
     worker.registerWorkflowImplementationTypes(GreetingWorkflowImpl.class, MainGreetingWorkflowImpl.class,
-        FetchWorkflowImpl.class, BatchFetchWorkflowImpl.class);
+        FetchWorkflowImpl.class, BatchFetchWorkflowImpl.class, DeadlockReproduceWorkflowImpl.class);
     worker.registerActivitiesImplementations(activities);
     return worker;
   }

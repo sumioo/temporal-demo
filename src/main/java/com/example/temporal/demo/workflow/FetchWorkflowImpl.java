@@ -33,33 +33,21 @@ public class FetchWorkflowImpl implements FetchWorkflow {
 
         activities.longGreeting(5);
 
+        // 这一步已经触发了所有活动的并发执行
         List<Promise<String>> promises = new ArrayList<>();
         for (String url : urls) {
             promises.add(Async.function(activities::fetchURL, url));
         }
 
         StringBuilder sb = new StringBuilder();
-        while (!promises.isEmpty()) {
-            Workflow.await(() -> promises.stream().anyMatch(Promise::isCompleted));
-
-            int doneIndex = -1;
-            for (int i = 0; i < promises.size(); i++) {
-                if (promises.get(i).isCompleted()) {
-                    doneIndex = i;
-                    break;
-                }
-            }
-
-            if (doneIndex != -1) {
-                Promise<String> completedPromise = promises.get(doneIndex);
-                try {
-                    String result = completedPromise.get();
-                    sb.append(result).append("; ");
-                } catch (Exception e) {
-                    sb.append("Failed to fetch: ").append(e.getMessage()).append("; ");
-                } finally {
-                    promises.remove(doneIndex);
-                }
+        // 直接按顺序获取结果。
+        // 因为任务已经并发运行，这里只是在收集结果。
+        // 总耗时仍然等于最慢的那个任务的耗时。
+        for (Promise<String> promise : promises) {
+            try {
+                sb.append(promise.get()).append("; ");
+            } catch (Exception e) {
+                sb.append("Failed to fetch: ").append(e.getMessage()).append("; ");
             }
         }
         return sb.toString();

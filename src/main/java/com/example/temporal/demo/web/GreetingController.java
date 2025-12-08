@@ -2,6 +2,7 @@ package com.example.temporal.demo.web;
 
 import com.example.temporal.demo.common.Constants;
 import com.example.temporal.demo.workflow.BatchFetchWorkflow;
+import com.example.temporal.demo.workflow.DeadlockReproduceWorkflow;
 import com.example.temporal.demo.workflow.FetchWorkflow;
 import com.example.temporal.demo.workflow.GreetingWorkflow;
 import com.example.temporal.demo.workflow.MainGreetingWorkflow;
@@ -101,5 +102,16 @@ public class GreetingController {
     BatchFetchWorkflow workflow = client.newWorkflowStub(BatchFetchWorkflow.class, options);
     WorkflowClient.start(workflow::orchestrate, urlBatches);
     return ResponseEntity.ok("Workflow started successfully. WorkflowId: " + options.getWorkflowId());
+  }
+
+  @PostMapping("/deadlock-reproduce")
+  public ResponseEntity<String> deadlockReproduce() {
+    WorkflowOptions options = WorkflowOptions.newBuilder()
+        .setTaskQueue(Constants.DEADLOCK_TASK_QUEUE)
+        .setWorkflowId("deadlock-reproduce-workflow")
+        .build();
+    DeadlockReproduceWorkflow workflow = client.newWorkflowStub(DeadlockReproduceWorkflow.class, options);
+    WorkflowClient.start(workflow::orchestrate);
+    return ResponseEntity.ok("Deadlock reproduce workflow started successfully. WorkflowId: " + options.getWorkflowId());
   }
 }

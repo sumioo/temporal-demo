@@ -1,6 +1,8 @@
 package com.example.temporal.demo.workflow;
 
 import com.example.temporal.demo.common.Constants;
+
+import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.workflow.Async;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Promise;
@@ -25,28 +27,15 @@ public class BatchFetchWorkflowImpl implements BatchFetchWorkflow {
             childPromises.add(Async.function(child::fetchUrls, urlBatches.get(i)));
         }
 
+        // This is the "fan-in" part.
+        // We wait for all the child workflows to complete and collect their results.
         StringBuilder sb = new StringBuilder();
-        while (!childPromises.isEmpty()) {
-            Workflow.await(() -> childPromises.stream().anyMatch(Promise::isCompleted));
-
-            int doneIndex = -1;
-            for (int i = 0; i < childPromises.size(); i++) {
-                if (childPromises.get(i).isCompleted()) {
-                    doneIndex = i;
-                    break;
-                }
-            }
-
-            if (doneIndex != -1) {
-                Promise<String> completedPromise = childPromises.get(doneIndex);
-                try {
-                    String result = completedPromise.get();
-                    sb.append("Child workflow result: ").append(result).append(System.lineSeparator());
-                } catch (Exception e) {
-                    sb.append("Child workflow failed: ").append(e.getMessage()).append(System.lineSeparator());
-                } finally {
-                    childPromises.remove(doneIndex);
-                }
+        for (Promise<String> promise : childPromises) {
+            // promise.get() will block until the child workflow completes.
+            try {
+                sb.append(promise.get());
+            } catch (Exception e) {
+                System.err.println("Error fetching URLs: " + e.getMessage());
             }
         }
         return sb.toString();

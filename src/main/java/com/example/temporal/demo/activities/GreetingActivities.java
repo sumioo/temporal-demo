@@ -13,6 +13,12 @@ public interface GreetingActivities {
   String longGreeting(int n);
 
   @ActivityMethod
+  String randomError();
+
+  @ActivityMethod
+  int randomInt();
+
+  @ActivityMethod
   void cleanupAfterFailure(String details);
 
   @ActivityMethod

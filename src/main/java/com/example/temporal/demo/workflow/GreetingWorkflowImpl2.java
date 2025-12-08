@@ -12,7 +12,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GreetingWorkflowImpl implements GreetingWorkflow {
+public class GreetingWorkflowImpl2 implements GreetingWorkflow {
   private final GreetingActivities activities = Workflow.newActivityStub(
       GreetingActivities.class,
       ActivityOptions.newBuilder()

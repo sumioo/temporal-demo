@@ -4,7 +4,7 @@ import com.example.temporal.demo.activities.GreetingActivities;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.Async;
 import io.temporal.workflow.Promise;
-import io.temporal.failure.ActivityFailure;
+import io.temporal.failure.ApplicationFailure;
 import io.temporal.workflow.Workflow;
 
 import java.time.Duration;
@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GreetingWorkflowImpl implements GreetingWorkflow {
+  private static final org.slf4j.Logger log = Workflow.getLogger(MainGreetingWorkflowImpl.class);
   private final GreetingActivities activities = Workflow.newActivityStub(
       GreetingActivities.class,
       ActivityOptions.newBuilder()
@@ -26,8 +27,25 @@ public class GreetingWorkflowImpl implements GreetingWorkflow {
   public String getGreeting(String name) {
 
     // 0. 先调用 longGreeting 活动
-    String longGreeting = activities.longGreeting(20);
-    System.out.println(longGreeting);
+    String longGreeting = activities.longGreeting(3);
+    log.warn(longGreeting);
+
+    // 3. 调用 longWait 活动
+    // longWait();
+    // int randomInt = activities.randomInt();
+    // log.warn("randomInt: " + randomInt);
+
+    // String randomError = activities.randomError();
+    // log.warn(randomError);
+
+    List<Integer> randInts = randInts();
+    log.warn("randInts: " + randInts);
+
+    if(randInts.get(0) > 5) {
+      // throw new RuntimeException("test");
+      throw ApplicationFailure.newNonRetryableFailure("randInts.get(0) > 5", randInts.get(0) + " > 5");
+    }
+
 
     // 1. 异步启动 10 个活动
     List<Promise<String>> promises = new ArrayList<>(10);
@@ -37,46 +55,31 @@ public class GreetingWorkflowImpl implements GreetingWorkflow {
 
     // 2. 任意一个完成就实时处理（按索引删除，保证剩余数量递减）
     StringBuilder sb = new StringBuilder();
-    while (!promises.isEmpty()) {
-      // 使用 Workflow.await() 来安全地等待，直到至少有一个 Promise 完成
-      Workflow.await(() -> promises.stream().anyMatch(Promise::isCompleted));
-
-      // 现在，从列表中找到那个已经完成的 Promise 的索引
-      int doneIndex = -1;
-      for (int i = 0; i < promises.size(); i++) {
-        if (promises.get(i).isCompleted()) {
-          doneIndex = i;
-          break;
-        }
-      }
-
-      // 如果找到了（理论上总能找到）
-      if (doneIndex != -1) {
-        Promise<String> completedPromise = promises.get(doneIndex);
-        try {
-            // 异常会在调用 .get() 时被抛出
-            String result = completedPromise.get();
-            System.out.println("anyOf: " + result);
-            sb.append(result).append("; ");
-
-        } catch (ActivityFailure e) {
-            // Activity 在所有重试后最终失败了！
-            Workflow.getLogger(GreetingWorkflowImpl.class).error("Activity failed after all retries.", e);
-
-            // 在这里调用清理 Activity
-            activities.cleanupAfterFailure("Failed to process greeting. Cause: " + e.getCause().getMessage());
-
-            // 在最终结果中记录一个错误标记
-            return sb.append("FAILED_ACTIVITY_CLEANED_UP; ").toString();
-
-        } finally {
-            // 无论成功还是失败，都必须将 Promise 移除，以防止死循环
-            promises.remove(doneIndex);
-            System.out.println("remaining = " + promises.size());
-        }
+    for (Promise<String> promise : promises) {
+      try {
+        sb.append(promise.get());
+      } catch (Exception e) {
+        log.error("==========Error Greeting: " + e.getClass());
+        throw Workflow.wrap(e);
       }
     }
+    log.warn(name + "==================================All activities completed.");
+    return sb.toString() + name + " All activities completed.";
+  }
 
-    return sb.toString();
+  void longWait() {
+    long start = System.currentTimeMillis();
+    while (System.currentTimeMillis() - start < 2000) {
+      // 什么都不做，但也不yield
+      // 这会触发 PotentialDeadlockException
+    }
+  }
+
+  List<Integer> randInts() {
+    List<Integer> randInts = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      randInts.add((int) (Math.random() * 10));
+    }
+    return randInts;
   }
 }
