@@ -38,7 +38,7 @@ public class GreetingWorkflowTest {
             GreetingWorkflow.class,
             WorkflowOptions.newBuilder().setTaskQueue(Constants.TASK_QUEUE).build());
     String result = workflow.getGreeting("Leon");
-    Assertions.assertEquals("Hello Leon!", result);
+    Assertions.assertEquals("Hello, Leon!", result);
   }
 }
 
